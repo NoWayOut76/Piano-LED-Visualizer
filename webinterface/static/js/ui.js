@@ -1304,6 +1304,90 @@ function get_songs() {
                         });
                     })
                     .catch(()=>{});
+        
+            let search = document.getElementById("song_search").value;
+        
+            const xhttp = new XMLHttpRequest();
+            xhttp.timeout = 5000;
+            xhttp.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    document.getElementById("songs_list_table").innerHTML = this.responseText;
+                    const dates = document.getElementsByClassName("song_date");
+                    for (let i = 0; i < dates.length; i++) {
+                        dates.item(i).innerHTML = new Date(dates.item(i).innerHTML * 1000).toISOString().slice(0, 19).replace('T', ' ');
+                    }
+                    const names = document.getElementsByClassName("song_name");
+                    for (let i = 0; i < names.length; i++) {
+                        names.item(i).value = names.item(i).value.replace('.mid', '');
+                    }
+                    document.getElementById("songs_list_table").classList.remove("animate-pulse", "pointer-events-none");
+        
+                    document.getElementById("songs_per_page").value = length;
+        
+                    if (sortby === "nameAsc") {
+                        document.getElementById("sort_icon_nameAsc").classList.remove("hidden");
+                        document.getElementById("sort_icon_nameDesc").classList.add("hidden");
+                        document.getElementById("sort_by_name").classList.add("text-gray-800", "dark:text-gray-200");
+                        document.getElementById("sort_by_date").classList.remove("text-gray-800", "dark:text-gray-200");
+                    }
+                    if (sortby === "nameDesc") {
+                        document.getElementById("sort_icon_nameDesc").classList.remove("hidden");
+                        document.getElementById("sort_icon_nameAsc").classList.add("hidden");
+                        document.getElementById("sort_by_name").classList.add("text-gray-800", "dark:text-gray-200");
+                        document.getElementById("sort_by_date").classList.remove("text-gray-800", "dark:text-gray-200");
+                    }
+        
+                    if (sortby === "dateAsc") {
+                        document.getElementById("sort_icon_dateAsc").classList.remove("hidden");
+                        document.getElementById("sort_icon_dateDesc").classList.add("hidden");
+                        document.getElementById("sort_by_date").classList.add("text-gray-800", "dark:text-gray-200");
+                        document.getElementById("sort_by_name").classList.remove("text-gray-800", "dark:text-gray-200");
+                    }
+                    if (sortby === "dateDesc") {
+                        document.getElementById("sort_icon_dateDesc").classList.remove("hidden");
+                        document.getElementById("sort_icon_dateAsc").classList.add("hidden");
+                        document.getElementById("sort_by_date").classList.add("text-gray-800", "dark:text-gray-200");
+                        document.getElementById("sort_by_name").classList.remove("text-gray-800", "dark:text-gray-200");
+                    }
+                    // Populate highscores; ensure currentProfileId is ready first
+                    const applyHighscores = (pid) => {
+                        if(!pid) return;
+                        fetch('/api/get_highscores?profile_id=' + pid)
+                            .then(r=>r.json())
+                            .then(data=>{
+                                if(!data.success) return;
+                                const hs = data.highscores || {};
+                                document.querySelectorAll('.song_highscore_cell').forEach(cell=>{
+                                    const song = cell.getAttribute('data-song');
+                                    const val = hs.hasOwnProperty(song) ? hs[song] : 0;
+                                    const span = cell.querySelector('.song_highscore_value');
+                                    if(span) span.textContent = val;
+                                });
+                            })
+                            .catch(()=>{});
+                    };
+                    const pid = window.currentProfileId;
+                    if(pid){
+                        applyHighscores(pid);
+                    } else {
+                        // Try to restore from cookie or backend and then apply
+                        let restored = null;
+                        try { if(typeof getCookie === 'function') restored = getCookie('currentProfileId'); } catch(e) {}
+                        if(restored){
+                            window.currentProfileId = parseInt(restored);
+                            applyHighscores(window.currentProfileId);
+                        } else {
+                            // As a last resort, query backend for current profile once
+                            fetch('/api/get_current_profile')
+                                .then(r=>r.json())
+                                .then(d=>{
+                                    if(d && d.profile_id){ window.currentProfileId = d.profile_id; applyHighscores(window.currentProfileId); }
+                                })
+                                .catch(()=>{});
+                        }
+                    }
+                }
+                translateStaticContent();
             };
             const pid = window.currentProfileId;
             if(pid){
@@ -2023,4 +2107,3 @@ try {
     __songsPrefsObserver.observe(document.body || document.documentElement, { childList: true, subtree: true });
 } catch (e) {
     // ignore
-}

@@ -99,7 +99,7 @@ class LearnMIDI:
         self.t = None
 
         self.current_idx = 0
-
+        
         self.mistakes_count = 0
         self.number_of_mistakes = int(usersettings.get_setting_value("number_of_mistakes"))
         self.delay_countR = 0
@@ -110,7 +110,6 @@ class LearnMIDI:
         self.left_hand_timing = []
         self.right_hand_mistakes = []
         self.left_hand_mistakes = []
-
 
     def add_instance(self, menu):
         self.menu = menu
@@ -487,7 +486,8 @@ class LearnMIDI:
                                     else:
                                         velocity = int(find_between(str(msg_in), "velocity=", " "))
 
-                                    # check if note is NOT in the list of notes to press
+                                    # check if note is in NOT the list of notes to press
+
                                     if note not in notes_to_press:
                                         wrong_notes.append(msg_in)
                                         # Clear pending software notes if wrong key is pressed
@@ -539,8 +539,6 @@ class LearnMIDI:
                                                     "multiplier": self.score_manager.get_multiplier(),
                                                     "last_update": self.score_manager.get_last_score_update()
                                                 }))
-
-
 
                                     else:
                                         try:
