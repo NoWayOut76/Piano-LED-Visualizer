@@ -56,8 +56,6 @@ class LearnMIDI:
         # Initialize the score manager
 
         self.loading = 0
-        self.songs_per_page = int(usersettings.get_setting_value("songs_per_page"))
-        self.sort_by = usersettings.get_setting_value("sort_by")
         self.practice = int(usersettings.get_setting_value("practice"))
         self.hands = int(usersettings.get_setting_value("hands"))
         self.mute_hand = int(usersettings.get_setting_value("mute_hand"))
@@ -489,6 +487,7 @@ class LearnMIDI:
                                         velocity = int(find_between(str(msg_in), "velocity=", " "))
 
                                     # check if note is in NOT the list of notes to press
+
                                     if note not in notes_to_press:
                                         wrong_notes.append(msg_in)
                                         # Clear pending software notes if wrong key is pressed
@@ -540,6 +539,7 @@ class LearnMIDI:
                                                     "multiplier": self.score_manager.get_multiplier(),
                                                     "last_update": self.score_manager.get_last_score_update()
                                                 }))
+
                                     else:
                                         try:
                                             notes_pressed.remove(note)
@@ -715,4 +715,4 @@ class LearnMIDI:
                 if 'No such file or directory' in str(e):
                     logger.info("midi2abc not found")
         else:
-            logger.info("file already converted")
+            logger.info("file already converted")
